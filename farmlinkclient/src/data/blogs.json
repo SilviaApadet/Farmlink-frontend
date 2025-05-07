@@ -1,0 +1,43 @@
+{
+    "blogs": [
+      {
+        "id": 1,
+        "title": "Reasons Why Poultry Farmers Are Shunning From Pesticides",
+        "summary": "Farmers increasingly reject chemical pesticides due to environmental concerns, consumer demand for organic produce, rising costs, and growing awareness of sustainable agricultural practices that preserve beneficial insects and soil health.",
+        "image": "/images/poultry-farm.jpg",
+        "author": "Alex Green",
+        "date": "2025-04-15",
+        "likes": 124,
+        "comments": 42
+      },
+      {
+        "id": 2,
+        "title": "Reasons Why Dairy Farmers Are Shunning From Pesticides",
+        "summary": "Farmers increasingly reject chemical pesticides due to environmental concerns, consumer demand for organic produce, rising costs, and growing awareness of sustainable agricultural practices that preserve beneficial insects and soil health.",
+        "image": "/images/dairy-farm.jpg",
+        "author": "Max Johnson",
+        "date": "2025-04-12",
+        "likes": 98,
+        "comments": 31
+      },
+      {
+        "id": 3,
+        "title": "Reasons Why Horticultural Farmers Are Shunning From Pesticides",
+        "summary": "Farmers increasingly reject chemical pesticides due to environmental concerns, consumer demand for organic produce, rising costs, and growing awareness of sustainable agricultural practices that preserve beneficial insects and soil health.",
+        "image": "/images/horticultural-farm.jpg",
+        "author": "Emily Turner",
+        "date": "2025-04-10",
+        "likes": 156,
+        "comments": 53
+      },
+      {
+        "id": 4,
+        "content": "Farmers worldwide are increasingly moving away from chemical pesticides, driven by a convergence of environmental, economic, and market factors. This shift represents a significant transformation in agricultural practices that have dominated for decades. Environmental concerns stand at the forefront.\n\nThis change - studies have demonstrated that chemical pesticides can contaminate water sources, harm wildlife, reduce biodiversity, and contribute to soil degradation. As farmers witness these impacts firsthand on their land, many are reconsidering traditional pest management approaches in favor of more sustainable alternatives.",
+        "image": "/images/sustainable-farming.jpg",
+        "author": "Sarah Williams",
+        "date": "2025-04-05",
+        "likes": 203,
+        "comments": 67
+      }
+    ]
+  }

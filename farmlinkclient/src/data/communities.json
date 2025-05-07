@@ -1,0 +1,36 @@
+{
+    "communities": [
+      {
+        "id": 1,
+        "name": "Poultry",
+        "tagline": "Welcome to the community",
+        "members": 1245,
+        "image": "/images/poultry-community.jpg",
+        "posts": 582
+      },
+      {
+        "id": 2,
+        "name": "Dairy",
+        "tagline": "Welcome to the community",
+        "members": 987,
+        "image": "/images/dairy-community.jpg",
+        "posts": 432
+      },
+      {
+        "id": 3,
+        "name": "Horticulture",
+        "tagline": "Welcome to the community",
+        "members": 1560,
+        "image": "/images/horticulture-community.jpg",
+        "posts": 753
+      },
+      {
+        "id": 4,
+        "name": "Organic Farming",
+        "tagline": "Welcome to the community",
+        "members": 2134,
+        "image": "/images/organic-community.jpg",
+        "posts": 921
+      }
+    ]
+  }
