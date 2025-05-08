@@ -1,0 +1,106 @@
+/* General Styles */
+.home-container {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+  
+  h2, h3 {
+    color: #2f6a4d;
+  }
+  
+  section {
+    margin-bottom: 40px;
+  }
+  
+  section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+  
+  /* Welcome Section */
+  .welcome-section {
+    background-color: #f0f8f0;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+  .welcome-section h2 {
+    font-size: 2rem;
+    color: #1c4d30;
+  }
+  
+  .welcome-section p {
+    font-size: 1.2rem;
+  }
+  
+  /* Communities Section */
+  .communities-section {
+    background-color: #e8f5e1;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  
+  .community-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .community-item {
+    margin-bottom: 10px;
+  }
+  
+  .community-link {
+    font-size: 1.2rem;
+    color: #4caf50;
+    text-decoration: none;
+  }
+  
+  .community-link:hover {
+    text-decoration: underline;
+  }
+  
+  /* Recent Posts Section */
+  .recent-posts-section {
+    background-color: #e0f7fa;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  
+  .recent-posts-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .recent-post-item {
+    margin-bottom: 15px;
+  }
+  
+  .post-link {
+    font-size: 1.2rem;
+    color: #0288d1;
+    text-decoration: none;
+  }
+  
+  .post-link:hover {
+    text-decoration: underline;
+  }
+  
+  /* Expert Recommendations Section */
+  .expert-recommendations-section {
+    background-color: #fff8e1;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  
+  .recommendations-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .recommendation-item {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+  
+  

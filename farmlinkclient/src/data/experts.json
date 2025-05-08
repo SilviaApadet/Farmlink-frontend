@@ -1,0 +1,40 @@
+{
+    "experts": [
+      {
+        "id": 1,
+        "name": "Alex",
+        "tagline": "Get insights from Alex",
+        "specialty": "Poultry Management",
+        "image": "/images/alex.jpg",
+        "followers": 3245,
+        "posts": 128
+      },
+      {
+        "id": 2,
+        "name": "Max",
+        "tagline": "Get insights from Max",
+        "specialty": "Dairy Farming",
+        "image": "/images/max.jpg",
+        "followers": 2987,
+        "posts": 96
+      },
+      {
+        "id": 3,
+        "name": "Emily",
+        "tagline": "Get insights from Emily",
+        "specialty": "Horticulture",
+        "image": "/images/emily.jpg",
+        "followers": 4120,
+        "posts": 152
+      },
+      {
+        "id": 4,
+        "name": "Sarah",
+        "tagline": "Get insights from Sarah",
+        "specialty": "Sustainable Farming",
+        "image": "/images/sarah.jpg",
+        "followers": 3568,
+        "posts": 137
+      }
+    ]
+  }
