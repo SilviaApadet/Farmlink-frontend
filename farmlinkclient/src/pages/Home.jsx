@@ -19,6 +19,7 @@ const Home = () => {
     </div>
   );
 };
+
 // Dashboard for regular users
 const UserDashboard = () => {
   const communities = ['Organic Growers', 'Sustainable Farming', 'AgriTech Innovators'];
