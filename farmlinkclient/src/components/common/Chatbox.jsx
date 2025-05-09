@@ -1,25 +1,46 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
-const Chatbox = ({ onClose, currentUserId, recipientId }) => {
+const Chatbox = ({ currentUserId, recipientId }) => {
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
+  const chatRef = useRef(null);
 
-  const api = '/api/v1/messages';  // replace with you full endpoint
+  const api = 'http://localhost:5000/api/v1/messages';
+
+  useEffect(() => {
+    fetchMessages();
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    if (chatRef.current) {
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    }
+  };
 
   const fetchMessages = async () => {
     try {
       const res = await axios.get(api);
+
+      if (!Array.isArray(res.data)) {
+        throw new Error("Unexpected response format");
+      }
+
       const userMessages = res.data.filter(
         (msg) =>
           (msg.sender_id === currentUserId && msg.recipient_id === recipientId) ||
           (msg.sender_id === recipientId && msg.recipient_id === currentUserId)
       );
+
       setMessages(userMessages);
       setLoading(false);
 
-      // On marking unread messages as read
+      // Mark unread messages as read
       userMessages.forEach(async (msg) => {
         if (!msg.is_read && msg.recipient_id === currentUserId) {
           await axios.put(`${api}/${msg.message_id}/read`);
@@ -27,12 +48,9 @@ const Chatbox = ({ onClose, currentUserId, recipientId }) => {
       });
     } catch (err) {
       console.error('Failed to fetch messages', err);
+      setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchMessages();
-  }, []);
 
   const sendMessage = async () => {
     if (!content.trim()) return;
@@ -43,76 +61,129 @@ const Chatbox = ({ onClose, currentUserId, recipientId }) => {
       content,
     };
 
+    // Optimistic message
+    const tempMessage = {
+      ...newMessage,
+      message_id: Date.now(), // temporary ID
+      created_at: new Date().toISOString(),
+      is_read: false,
+    };
+
+    setMessages((prev) => [...prev, tempMessage]);
+    setContent('');
+
     try {
-      // Optimistically update UI
-      const tempMessage = {
-        ...newMessage,
-        message_id: Date.now(), 
-        created_at: new Date().toISOString(),
-        is_read: false,
-      };
-
-      setMessages((prev) => [...prev, tempMessage]);
-      setContent('');
-
       const res = await axios.post(api, newMessage);
 
-      // Replace temp message with real one (optional improvement)
+      // Replace temp message with actual one
       setMessages((prev) =>
-        prev.map((msg) =>
-          msg.message_id === tempMessage.message_id ? res.data : msg
-        )
+        [...prev.filter(msg => msg.message_id !== tempMessage.message_id), res.data]
       );
     } catch (err) {
-      console.error('Failed to send message', err);
+      if (
+        err.code === 'ERR_CONNECTION_REFUSED' ||
+        err.response?.status === 404
+      ) {
+        console.warn('Server unavailable, message shown locally only.');
+      } else {
+        console.error('Failed to send message:', err);
+      }
     }
   };
 
   return (
-    <div className="fixed z-50 bg-white shadow-lg border rounded-md w-full h-full sm:w-96 sm:h-[500px] sm:top-5 sm:right-5 sm:rounded-xl">
-      <div className="flex justify-between items-center px-4 py-2 border-b">
-        <h2 className="text-lg font-semibold">Chat</h2>
-        <button onClick={onClose} className="text-gray-600 hover:text-red-500 text-xl">&times;</button>
-      </div>
-
-      <div className="p-4 h-[calc(100%-130px)] overflow-y-auto">
+    <div style={styles.container}>
+      <div style={styles.chatBox} ref={chatRef}>
         {loading ? (
-          <p className="text-gray-500">Loading messages...</p>
-        ) : messages.length === 0 ? (
-          <p className="text-gray-400">No messages yet.</p>
+          <p>Loading messages...</p>
         ) : (
           messages.map((msg) => (
             <div
               key={msg.message_id}
-              className={`mb-2 p-2 rounded max-w-[80%] ${
-                msg.sender_id === currentUserId ? 'bg-green-100 ml-auto text-right' : 'bg-gray-100'
-              }`}
+              style={{
+                ...styles.message,
+                alignSelf: msg.sender_id === currentUserId ? 'flex-end' : 'flex-start',
+                backgroundColor: msg.sender_id === currentUserId ? '#dcf8c6' : '#fff',
+              }}
             >
-              <p className="text-sm">{msg.content}</p>
-              <p className="text-xs text-gray-400">{new Date(msg.created_at).toLocaleString()}</p>
+              {msg.content}
+              {!msg.message_id.toString().startsWith('server_') && (
+                <span style={styles.timestamp}>
+                  {new Date(msg.created_at).toLocaleTimeString()}
+                </span>
+              )}
             </div>
           ))
         )}
       </div>
-
-      <div className="p-4 border-t flex gap-2">
+      <div style={styles.inputRow}>
         <input
           type="text"
-          placeholder="Type a message..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="flex-1 border rounded px-3 py-2 focus:outline-none"
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+          placeholder="Type a message..."
+          style={styles.input}
         />
-        <button
-          onClick={sendMessage}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Send
-        </button>
+        <button onClick={sendMessage} style={styles.sendBtn}>Send</button>
       </div>
     </div>
   );
+};
+
+// Basic inline styles
+const styles = {
+  container: {
+    width: '100%',
+    maxWidth: 500,
+    border: '1px solid #ccc',
+    borderRadius: 8,
+    display: 'flex',
+    flexDirection: 'column',
+    height: 400,
+    margin: 'auto',
+  },
+  chatBox: {
+    flex: 1,
+    padding: 10,
+    overflowY: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: '#f0f0f0',
+  },
+  message: {
+    padding: '8px 12px',
+    margin: '5px 0',
+    borderRadius: 8,
+    maxWidth: '70%',
+    position: 'relative',
+  },
+  timestamp: {
+    fontSize: 10,
+    color: '#888',
+    marginLeft: 8,
+  },
+  inputRow: {
+    display: 'flex',
+    padding: 10,
+    borderTop: '1px solid #ccc',
+    backgroundColor: '#fff',
+  },
+  input: {
+    flex: 1,
+    padding: 8,
+    borderRadius: 4,
+    border: '1px solid #ccc',
+    marginRight: 8,
+  },
+  sendBtn: {
+    padding: '8px 16px',
+    borderRadius: 4,
+    backgroundColor: '#28a745',
+    color: '#fff',
+    border: 'none',
+    cursor: 'pointer',
+  },
 };
 
 export default Chatbox;
