@@ -12,7 +12,7 @@ const ExpertList = () => {
   useEffect(() => {
     const fetchExperts = async () => {
       try {
-        const response = await axios.get(''); // Replace with your API
+        const response = await axios.get('http://127.0.0.1:5000/api/v1/experts'); // Replace with your API
         console.log('Fetched experts:', response.data);
 
         if (Array.isArray(response.data)) {
