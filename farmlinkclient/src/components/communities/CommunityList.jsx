@@ -12,7 +12,7 @@ const CommunityList = () => {
   useEffect(() => {
     const fetchCommunities = async () => {
       try {
-        const response = await axios.get('');  //replace  with actual API endpoint
+        const response = await axios.get('http://127.0.0.1:5000/api/v1/communities');  //replace  with actual API endpoint
         console.log('Fetched communities:', response.data);
 
         // On ensuring response.data is an array before setting it
