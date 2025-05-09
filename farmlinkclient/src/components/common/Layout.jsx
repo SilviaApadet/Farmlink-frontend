@@ -1,9 +1,11 @@
 // src/components/common/Layout.jsx
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 const Layout = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // Add this to get the current location
+  const isWelcomePage = location.pathname === '/' || location.pathname === '/welcome';
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -19,28 +21,31 @@ const Layout = () => {
 
   return (
     <div>
-      <header>
-        <nav style={styles.navbar}>
-          <div>
-            <Link style={styles.link} to="/home">Home</Link>
-            <Link style={styles.link} to="/blogs">Blogs</Link>
-            <Link style={styles.link} to="/communities">Communities</Link>
-            <Link style={styles.link} to="/experts">Experts</Link>
-            <Link style={styles.link} to="/profile">Profile</Link>
-          </div>
-          <div>
-            {!isLoggedIn ? (
-              <>
-                <Link style={styles.link} to="/login">Login</Link>
-                <Link style={styles.link} to="/signup">Sign Up</Link>
-              </>
-            ) : (
-              <button style={styles.logoutButton} onClick={handleLogout}>Logout</button>
-            )}
-          </div>
-        </nav>
-      </header>
-      <main style={styles.mainContent}>
+      {/* Only render the header/navbar if not on the welcome page */}
+      {!isWelcomePage && (
+        <header>
+          <nav style={styles.navbar}>
+            <div>
+              <Link style={styles.link} to="/home">Home</Link>
+              <Link style={styles.link} to="/blogs">Blogs</Link>
+              <Link style={styles.link} to="/communities">Communities</Link>
+              <Link style={styles.link} to="/experts">Experts</Link>
+              <Link style={styles.link} to="/profile">Profile</Link>
+            </div>
+            <div>
+              {!isLoggedIn ? (
+                <>
+                  <Link style={styles.link} to="/login">Login</Link>
+                  <Link style={styles.link} to="/signup">Sign Up</Link>
+                </>
+              ) : (
+                <button style={styles.logoutButton} onClick={handleLogout}>Logout</button>
+              )}
+            </div>
+          </nav>
+        </header>
+      )}
+      <main style={isWelcomePage ? {} : styles.mainContent}>
         <Outlet />
       </main>
     </div>
@@ -77,7 +82,3 @@ const styles = {
 };
 
 export default Layout;
-
-
-
-

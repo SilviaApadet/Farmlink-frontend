@@ -9,8 +9,7 @@ const SignUp = () => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    password: '',
-    full_name: ''
+    password: ''
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -55,12 +54,6 @@ const SignUp = () => {
           type="email"
           placeholder="Email"
           required
-        />
-        <input
-          name="full_name"
-          onChange={handleChange}
-          value={formData.full_name}
-          placeholder="Full Name"
         />
         <input
           name="password"
