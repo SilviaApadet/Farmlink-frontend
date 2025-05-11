@@ -9,23 +9,30 @@ const CommunityList = () => {
   const [error, setError] = useState(null);
 
 
+  // On fetching communities from backend
   useEffect(() => {
-    fetchCommunities()
-  }, []);
+    const fetchCommunities = async () => {
+      try {
+        const response = await axios.get('https://farmlink-server-bhlp.onrender.com/communities');  //replace  with actual API endpoint
+        console.log('Fetched communities:', response.data);
 
-  const fetchCommunities = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/communities`)
-      const data = response.data;
-      setCommunities(data)
-    } catch (error) {
-      toast('Cannot fetch communities')
-    }
-    finally{
-      setLoading(false)
-    }
-  }
+        // On ensuring response.data is an array before setting it
+        if (Array.isArray(response.data)) {
+          setCommunities(response.data);
+        } else {
+          throw new Error('Fetched data is not an array');
+        }
 
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching communities:', err);
+        setError('Failed to load communities, displaying default data.');
+        setCommunities(communityData.communities || []); // On adding a fallback to default data
+        setLoading(false);
+      }
+    };
+
+ 
   if (loading) {
     return <p>Loading communities...</p>;
   }
