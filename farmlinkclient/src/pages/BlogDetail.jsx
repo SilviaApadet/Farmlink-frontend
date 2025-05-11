@@ -14,7 +14,11 @@ const BlogDetail = () => {
   const dispatch = useDispatch();
   const [blog, setBlog] = useState(state?.blog);
   const [loading, setLoading] = useState(true);
-  const {currentUser} = useAuth();
+  const { currentUser } = useAuth();
+
+  // Add local states for optimistic UI updates
+  const [localLiked, setLocalLiked] = useState(false);
+  const [localLikeCount, setLocalLikeCount] = useState(0);
 
   const API_URL = "https://farmlink-server-bhlp.onrender.com";
   
@@ -45,6 +49,15 @@ const BlogDetail = () => {
     fetchBlog();
   }, [id, blog, API_URL]);
 
+  // Update local state when blog data or Redux state changes
+  useEffect(() => {
+    if (blog) {
+      const isLiked = likedBlogs.includes(blog.id);
+      setLocalLiked(isLiked);
+      setLocalLikeCount(blog.likes || 0);
+    }
+  }, [blog, likedBlogs]);
+
   // Format date to be more readable
   const formatDate = (dateString) => {
     try {
@@ -55,8 +68,17 @@ const BlogDetail = () => {
     }
   };
 
-  // Handle like button click
+  // Handle like button click with optimistic updates
   const handleLike = async () => {
+    if (!currentUser) {
+      toast.error("Please login to like posts");
+      return;
+    }
+
+    // Optimistically update local UI state
+    setLocalLiked(!localLiked);
+    setLocalLikeCount(prevCount => localLiked ? prevCount - 1 : prevCount + 1);
+    
     try {
       // Call API to like blog
       const response = await axios.post(`${API_URL}/blogs/${id}/like`, {
@@ -64,18 +86,26 @@ const BlogDetail = () => {
       });
       
       // Update Redux store
-      dispatch(likeBlog(parseInt(id) || id));
+      if (!localLiked) {
+        dispatch({ type: 'ADD_LIKED_BLOG', payload: parseInt(id) || id });
+      } else {
+        dispatch({ type: 'REMOVE_LIKED_BLOG', payload: parseInt(id) || id });
+      }
       
-      // Update local state
+      // Update full blog object
       setBlog(prev => ({
         ...prev,
-        likes: (prev.likes || 0) + 1
+        likes: localLiked ? (prev.likes || 1) - 1 : (prev.likes || 0) + 1
       }));
       
-      toast.success("Blog liked!");
+      toast.success(response.data?.message || "Blog like updated!");
     } catch (error) {
       console.error("Error liking blog:", error);
-      toast.error("Failed to like blog");
+      toast.error("Failed to update like status");
+      
+      // Revert optimistic update on error
+      setLocalLiked(!localLiked);
+      setLocalLikeCount(prevCount => localLiked ? prevCount + 1 : prevCount - 1);
     }
   };
 
@@ -96,9 +126,6 @@ const BlogDetail = () => {
       comments: Math.max((prev.comments || 0) - 1, 0)
     }));
   };
-
-  // Check if blog is liked
-  const isLiked = blog && likedBlogs.includes(blog.id);
 
   if (loading) {
     return (
@@ -146,12 +173,12 @@ const BlogDetail = () => {
               <div className="flex space-x-4">
                 <button 
                   onClick={handleLike}
-                  className={`flex items-center ${isLiked ? 'text-red-500' : 'text-gray-600 hover:text-red-500'}`}
+                  className={`flex items-center space-x-2 transition-colors duration-200 ${localLiked ? 'text-red-500' : 'text-gray-600 hover:text-green-600'}`}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-1" fill={isLiked ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-1" fill={localLiked ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
-                  <span>{blog.likes || 0}</span>
+                  <span>{localLikeCount}</span>
                 </button>
                 <div className="flex items-center text-gray-600">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
