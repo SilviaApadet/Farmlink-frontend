@@ -8,12 +8,14 @@ const CommunityList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // On fetching communities from backend
   useEffect(() => {
     const fetchCommunities = async () => {
       try {
-        const response = await axios.get(`${API_URL}/communities`);
+        const response = await axios.get(`${API_URL}/communities`);  // Using the API_URL constant
         console.log('Fetched communities:', response.data);
 
+        // On ensuring response.data is an array before setting it
         if (Array.isArray(response.data)) {
           setCommunities(response.data);
         } else {
@@ -23,14 +25,14 @@ const CommunityList = () => {
         setLoading(false);
       } catch (err) {
         console.error('Error fetching communities:', err);
-        setError('Failed to load communities, displaying default data.');
-        setCommunities([]); // Optional: fallback data
+        setError('Failed to load communities.');
         setLoading(false);
+        // Removed reference to undefined communityData
       }
     };
 
-    fetchCommunities(); // ✅ Important!
-  }, []);
+    fetchCommunities(); // Call the function
+  }, []); // Empty dependency array to run once on mount
 
   if (loading) {
     return <p>Loading communities...</p>;
@@ -39,7 +41,7 @@ const CommunityList = () => {
   return (
     <div className="p-6">
       <h2 className="text-xl font-bold mb-4">Communities</h2>
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-red-500">{error}</p>} {/* Display error message */}
       {communities.length === 0 ? (
         <p className="text-gray-500">No communities available.</p>
       ) : (

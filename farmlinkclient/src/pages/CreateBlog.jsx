@@ -260,12 +260,13 @@ const CreateBlog = () => {
               />
             </div>
 
-            {/* Action buttons */}
-            <div className="flex justify-end space-x-4 mt-8">
+            {/* Action buttons - Centered */}
+            <div className="flex justify-center space-x-4 mt-8">
               <button
                 type="button"
                 onClick={() => navigate('/blogs')}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-red-500 text-white hover:bg-red-600"
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 transition-colors shadow-sm"
+                title="Cancel"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -274,9 +275,12 @@ const CreateBlog = () => {
               <button
                 type="submit"
                 onClick={(e) => handleSubmit(e)}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium transition-colors shadow-sm flex items-center"
               >
                 POST
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
               </button>
             </div>
           </form>
