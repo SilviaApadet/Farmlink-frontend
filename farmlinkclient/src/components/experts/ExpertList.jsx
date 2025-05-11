@@ -1,42 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ExpertCard from './ExpertCard';
-import expertsData from '../../data/experts.json';
+import toast from 'react-hot-toast';
 
 const ExpertList = () => {
   const [experts, setExperts] = useState([]);
+  const API_URL = "https://farmlink-server-bhlp.onrender.com";
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchExperts = async () => {
-      try {
-        const response = await axios.get('http://127.0.0.1:5000/api/v1/experts'); // Replace with your API
-        console.log('Fetched experts:', response.data);
-
-        if (Array.isArray(response.data)) {
-          const onlyExperts = response.data.filter(user => user.is_expert);
-          if (onlyExperts.length > 0) {
-            setExperts(onlyExperts);
-          } else {
-            console.warn('No experts returned, falling back to default data');
-            setExperts(expertsData.experts);
-          }
-        } else {
-          throw new Error('Fetched data is not an array');
-        }
-      } catch (err) {
-        console.error('Error fetching experts:', err);
-        setError('Failed to load experts from server. Showing default data.');
-        setExperts(expertsData.experts);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchExperts();
+    fetchExperts()
   }, []);
+
+  const fetchExperts = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API_URL}/experts`)
+      const data = response.data;
+      setExperts(data)
+    } catch (error) {
+      toast('Cannot fetch experts')
+    }
+    finally {
+      setLoading(false);
+    }
+  }
 
   const filteredExperts = experts.filter((expert) => {
     const name = expert.full_name || expert.username || '';

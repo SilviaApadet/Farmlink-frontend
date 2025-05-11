@@ -5,7 +5,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 const AuthContext = createContext(null);
 
 // API URL - adjust this to match your backend
-const API_URL = "http://localhost:5000/api/v1";
+const API_URL = "https://farmlink-server-bhlp.onrender.com";
 
 
 export const AuthProvider = ({ children }) => {
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     
     try {
-      const response = await fetch(`${API_URL}/auth/register`, {
+      const response = await fetch(`${API_URL}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -42,9 +42,6 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || 'Registration failed');
       }
       
-      // Save user data and tokens
-      localStorage.setItem('token', data.access_token);
-      localStorage.setItem('refreshToken', data.refresh_token);
       localStorage.setItem('user', JSON.stringify(data.user));
       
       setCurrentUser(data.user);
@@ -63,7 +60,7 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -72,7 +69,7 @@ export const AuthProvider = ({ children }) => {
       });
       
       const data = await response.json();
-      
+      console.log("data", data)
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
       }
@@ -80,9 +77,9 @@ export const AuthProvider = ({ children }) => {
       // Save user data and tokens
       localStorage.setItem('token', data.access_token);
       localStorage.setItem('refreshToken', data.refresh_token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('user', JSON.stringify(data));
       
-      setCurrentUser(data.user);
+      setCurrentUser(data);
       setLoading(false);
       return data;
     } catch (err) {
@@ -94,8 +91,6 @@ export const AuthProvider = ({ children }) => {
 
   // Logout user
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     setCurrentUser(null);
   };

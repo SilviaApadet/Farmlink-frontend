@@ -1,36 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import NavBar from '../components/common/NavBar';
+// import NavBar from '../components/common/NavBar';
 import { likeBlog, addComment, deleteComment } from '../redux/slices/blogSlice';
+import { useAuth } from '../contexts/AuthContext';
+import toast from 'react-hot-toast';
+import axios from 'axios';
 
 const BlogDetail = () => {
   const { id } = useParams();
+  const location = useLocation();
+  const state = location.state || {};
   const dispatch = useDispatch();
-  const [blog, setBlog] = useState(null);
+  const [blog, setBlog] = useState(state?.blog);
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState('');
+  const {currentUser} = useAuth();
+
+  const API_URL = "https://farmlink-server-bhlp.onrender.com";
+
   
   // Get blogs from Redux store
   const blogs = useSelector(state => state.blogs.blogs);
   const blogStatus = useSelector(state => state.blogs.status);
   const likedBlogs = useSelector(state => state.blogs.likedBlogs);
-
-  useEffect(() => {
-    if (blogStatus === 'succeeded') {
-      // Try to find the blog by ID
-      // First try with the ID as a number (parseInt)
-      let foundBlog = blogs.find(blog => blog.id === parseInt(id));
-      
-      // If not found, try with the ID as a string
-      if (!foundBlog) {
-        foundBlog = blogs.find(blog => blog.id === id || blog.id.toString() === id);
-      }
-      
-      setBlog(foundBlog);
-      setLoading(false);
-    }
-  }, [id, blogs, blogStatus]);
 
   // Format date to be more readable
   const formatDate = (dateString) => {
@@ -67,17 +60,28 @@ const BlogDetail = () => {
   };
 
   // Handle comment submission
-  const handleCommentSubmit = (e) => {
+  const handleCommentSubmit = async(e) => {
     e.preventDefault();
     if (commentText.trim()) {
-      dispatch(addComment({
-        blogId: parseInt(id) || id,
-        commentText,
-        author: 'Current User' // In a real app, get from user profile
-      }));
+      await addComment();
+      
       setCommentText('');
     }
   };
+
+  const addComment = async () => {
+    try {
+      const response = await axios.post(`${API_URL}/blogs/${id}/comment`, {
+        content:commentText,
+        user_id: currentUser.user_id
+      });
+
+      const data = response.data;
+      toast(data.message)
+    } catch (error) {
+      console.log("error", error)
+    }
+  }
 
   // Handle comment deletion
   const handleDeleteComment = (commentId) => {
@@ -87,24 +91,21 @@ const BlogDetail = () => {
     }));
   };
 
+  const editBlog = async (id, newBlog) => {
+    try {
+      const response = await axios.put(`${API_URL}/blogs/${id}`, newBlog)
+    } catch (error) {
+      toast(error.message)
+    }
+  }
+
   // Check if blog is liked
   const isLiked = blog && likedBlogs.includes(blog.id);
 
-  if (loading && blogStatus !== 'succeeded') {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <NavBar />
-        <div className="container mx-auto px-4 py-8">
-          <p>Loading...</p>
-        </div>
-      </div>
-    );
-  }
 
   if (!blog) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <NavBar />
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold mb-4">Blog not found</h1>
           <Link to="/" className="text-green-600 hover:text-green-800">
@@ -117,7 +118,6 @@ const BlogDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <NavBar />
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="relative h-64 sm:h-80 md:h-96">

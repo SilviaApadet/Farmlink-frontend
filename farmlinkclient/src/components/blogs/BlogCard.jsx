@@ -1,13 +1,18 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { likeBlog } from '../../redux/slices/blogSlice';
+import axios from 'axios';
+import { useAuth } from '../../contexts/AuthContext';
+import toast from 'react-hot-toast';
 
-const BlogCard = ({ blog }) => {
+const BlogCard = ({ blog, onBlogLike, deleteBlog, editBlog }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const likedBlogs = useSelector(state => state.blogs.likedBlogs);
   const isLiked = likedBlogs.includes(blog.id);
+  const { currentUser } = useAuth();
+
+  const API_URL = "https://farmlink-server-bhlp.onrender.com";
 
   // Format date to be more readable
   const formatDate = (dateString) => {
@@ -23,19 +28,48 @@ const BlogCard = ({ blog }) => {
   };
 
   // Handle like button click
-  const handleLike = (e) => {
+  const handleLike = async (e) => {
     e.stopPropagation(); // Stop event propagation to prevent navigation
-    dispatch(likeBlog(blog.id));
+    await likeBlog(blog.id);
   };
+
+  const likeBlog = async (blogId) => {
+    try {
+      const response = await axios.post(`${API_URL}/blogs/${blogId}/like`, { "user_id": currentUser.user_id }, {
+        headers: {
+          "Content-Type": 'application/json'
+        }
+      });
+      const res = response.data;
+      onBlogLike()
+      toast(res.message)
+    } catch (error) {
+      console.log("Error", error)
+      toast(error.message)
+    }
+  }
 
   // Handle card click to navigate to blog detail
   const handleCardClick = () => {
-    navigate(`/blogs/${blog.id}`);
+    navigate(`/blogs/${blog.id}`, { state: { blog } });
   };
 
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+
+    await deleteBlog();
+  }
+
+  const handleEdit = (e) => {
+    console.log("Edit blog ...")
+    e.stopPropagation();
+
+    navigate(`/blogs/create`, { state: { blog, editMode: true } });
+  }
+
   return (
-    <div 
-      className="mb-12 border-b pb-8 cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-4" 
+    <div
+      className="mb-12 border-b pb-8 cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-4"
       onClick={handleCardClick}
     >
       <div className="flex flex-col md:flex-row md:items-start">
@@ -48,7 +82,7 @@ const BlogCard = ({ blog }) => {
             {truncateContent(blog.content)}
           </div>
           <div className="flex items-center space-x-6">
-            <button 
+            <button
               onClick={handleLike}
               className={`flex items-center space-x-2 ${isLiked ? 'text-red-500' : 'hover:text-green-600'}`}
             >
@@ -63,8 +97,11 @@ const BlogCard = ({ blog }) => {
               </svg>
               <span>{blog.comments || 0}</span>
             </div>
-            <Link 
-              to={`/blogs/${blog.id}`} 
+            <Link
+              to={`/blogs/${blog.id}`}
+              state={{
+                blog
+              }}
               className="text-green-600 hover:text-green-800 ml-auto"
               onClick={(e) => e.stopPropagation()} // Prevent double navigation
             >
@@ -74,14 +111,28 @@ const BlogCard = ({ blog }) => {
         </div>
         {blog.image && (
           <div className="w-full md:w-1/3 md:ml-6 mt-4 md:mt-0">
-            <img 
-              src={blog.image} 
+            <img
+              src={blog.image}
               alt={blog.title}
               className="w-full h-auto rounded-lg object-cover"
               style={{ maxHeight: '200px' }}
             />
           </div>
         )}
+        <button
+          type="submit"
+          onClick={(e) => handleEdit(e)}
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+        >
+          EDIT
+        </button>
+        <button
+          type="submit"
+          onClick={(e) => handleDelete(e)}
+          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          DELETE
+        </button>
       </div>
     </div>
   );
