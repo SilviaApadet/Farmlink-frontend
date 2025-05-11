@@ -1,23 +1,19 @@
-// src/components/comments/Comment.jsx
+// src/components/comments/Comments.jsx
 import React from 'react';
 
-const Comment = ({ comment, currentUser, onDelete, getTimeElapsed }) => {
+const Comments = ({ comment, currentUser, onDelete, getTimeElapsed }) => {
   return (
-    <div className="flex mb-4 p-4 bg-gray-50 rounded-lg">
+    <div className="flex">
       <div className="mr-3 flex-shrink-0">
-        <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
-          <span className="text-gray-600 text-sm">
-            {comment.author.charAt(0).toUpperCase()}
-          </span>
+        <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white font-medium">
+          {comment.author.charAt(0).toUpperCase()}
         </div>
       </div>
       <div className="flex-grow">
         <div className="flex items-center justify-between mb-1">
           <div>
             <span className="font-medium mr-2">{comment.author}</span>
-            <span className="text-sm text-gray-500">
-              {getTimeElapsed(comment.date)}
-            </span>
+            <span className="text-sm text-gray-500">{getTimeElapsed(comment.date)}</span>
           </div>
           {comment.author === currentUser && (
             <button 
@@ -37,4 +33,4 @@ const Comment = ({ comment, currentUser, onDelete, getTimeElapsed }) => {
   );
 };
 
-export default Comment;
+export default Comments;
