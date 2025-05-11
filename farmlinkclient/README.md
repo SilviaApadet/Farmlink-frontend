@@ -1,12 +1,105 @@
-# React + Vite
+# FarmLink
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## About
+FarmLink is an agricultural super app designed to connect farmers with information, experts, and communities. The platform aims to address key challenges in agriculture through knowledge sharing and networking.
 
-Currently, two official plugins are available:
+## Problem Statement
+- Limited access to agricultural information
+- Fragmented supply chains
+- Limited access to finance and insurance
+- Low technology adoption
+- Data privacy concerns
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
+- User authentication (register, login)
+- Profile management
+- Agricultural blogs/posts browsing
+- Community/expert following
+- Content creation with image uploads
+- Commenting and liking posts
+- Direct messaging with experts and communities
 
-## Expanding the ESLint configuration
+## Tech Stack
+- **Backend**: Python (Flask)
+- **Database**: PostgreSQL
+- **Frontend**: ReactJS with Redux Toolkit
+- **Design**: Figma (mobile-friendly)
+- **Testing**: Jest & Minitests
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Getting Started
+
+### 🎨 Design
+- **Figma** - Mobile-first wireframes & UI design
+
+
+### Backend Setup
+```bash
+# Clone the repository
+git clone git@github.com:Michellembogo/Farmlink-backend.git
+cd Farmlink/backend
+
+# Set up virtual environment
+python -m venv venv
+source venv/bin/activate  
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up database
+flask db init
+flask db migrate
+flask db upgrade
+
+# Run server
+flask run
+```
+
+### Frontend Setup
+```bash
+cd ../frontend
+
+# Install dependencies
+npm install
+
+# Run development server
+npm start
+```
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - User login
+
+### Posts
+- `GET /api/posts` - Get all posts
+- `POST /api/posts` - Create a post
+- `GET /api/posts/:id` - Get specific post
+
+### Users
+- `GET /api/users/profile` - Get user profile
+- `PUT /api/users/profile` - Update profile
+
+### Social
+- `POST /api/follow` - Follow expert/community
+- `GET /api/follow` - View followed entities
+- `POST /api/posts/:id/comments` - Comment on post
+- `POST /api/messages` - Send message
+
+## License
+MIT License
+
+## Contact
+Email: farmlink@gmail.com
+|
+## Contributors
+Issa – Blog post functionality(frontend)
+
+Prudence Canva – Messaging & following system(frontend)
+
+Silvia Apadet –  Welcome, home, login/signup pages(Frontend)
+
+Tasha Nduku - Backend
+
+Michelle Mbogo - Backend
+
