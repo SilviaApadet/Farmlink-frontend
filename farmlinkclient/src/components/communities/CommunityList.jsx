@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import CommunityCard from './CommunityCard';
-import communityData from '../../data/communities.json';
 
 const CommunityList = () => {
   const [communities, setCommunities] = useState([]);
+  const API_URL = "https://farmlink-server-bhlp.onrender.com";
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -12,7 +12,7 @@ const CommunityList = () => {
   useEffect(() => {
     const fetchCommunities = async () => {
       try {
-        const response = await axios.get('https://farmlink-server-bhlp.onrender.com/communities');  //replace  with actual API endpoint
+        const response = await axios.get(`${API_URL}/communities`);  // Using the API_URL constant
         console.log('Fetched communities:', response.data);
 
         // On ensuring response.data is an array before setting it
@@ -25,14 +25,14 @@ const CommunityList = () => {
         setLoading(false);
       } catch (err) {
         console.error('Error fetching communities:', err);
-        setError('Failed to load communities, displaying default data.');
-        setCommunities(communityData.communities || []); // On adding a fallback to default data
+        setError('Failed to load communities.');
         setLoading(false);
+        // Removed reference to undefined communityData
       }
     };
 
-    fetchCommunities();
-  }, []);
+    fetchCommunities(); // Call the function
+  }, []); // Empty dependency array to run once on mount
 
   if (loading) {
     return <p>Loading communities...</p>;

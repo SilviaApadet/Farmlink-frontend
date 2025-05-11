@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './Profile.css';
+import axios from 'axios';
+
+import toast, { Toaster } from 'react-hot-toast';
+
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -9,6 +13,8 @@ const Profile = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const API_URL = "https://farmlink-server-bhlp.onrender.com";
   
   const [formData, setFormData] = useState({
     username: '',
@@ -45,7 +51,7 @@ const Profile = () => {
       // Fetch additional user details
       const fetchUserDetails = async () => {
         try {
-          const response = await fetch(`http://localhost:5000/api/v1/users/${currentUser.user_id}`, {
+          const response = await fetch(`${API_URL}/users/${currentUser.user_id}`, {
             headers: { ...getAuthHeader() }
           });
           
@@ -56,7 +62,8 @@ const Profile = () => {
               bio: userData.bio || '',
               location: userData.location || '',
               expertise: userData.expertise || '',
-              profile_picture: userData.profile_picture || ''
+              profile_picture: userData.profile_picture || '',
+              email: userData.email
             }));
             
             if (userData.profile_picture) {
@@ -84,6 +91,27 @@ const Profile = () => {
     }
   };
 
+  const [imageUrl, setImageUrl] = useState('');
+
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    const formData = new FormData();
+
+    formData.append('file', file);
+    formData.append('upload_preset', 'uploads')
+    formData.append('cloud_name', 'dhvgpxttr');
+
+    try {
+      const response = await axios.post(
+        'https://api.cloudinary.com/v1_1/dhvgpxttr/image/upload',
+        formData
+      );
+      setImageUrl(response.data.secure_url);
+    } catch (error) {
+      console.error('Upload failed:', error);
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     setError('');
@@ -91,8 +119,7 @@ const Profile = () => {
     setIsLoading(true);
     
     try {
-      // Update user profile
-      const response = await fetch(`http://localhost:5000/api/v1/users/${currentUser.user_id}`, {
+      const response = await fetch(`${API_URL}/profile/${currentUser.user_id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -103,7 +130,7 @@ const Profile = () => {
           bio: formData.bio,
           location: formData.location,
           expertise: formData.expertise,
-          // Handle profile picture separately if it's a file
+          profile_picture: imageUrl
         })
       });
       
@@ -111,47 +138,17 @@ const Profile = () => {
         const data = await response.json();
         throw new Error(data.message || 'Failed to update profile');
       }
-      
-      // Handle image upload separately if there's a new profile picture
-      if (formData.profilePic && formData.profilePic instanceof File) {
-        const formDataForImage = new FormData();
-        formDataForImage.append('image', formData.profilePic);
-        
-        const imageResponse = await fetch('http://localhost:5000/api/v1/posts/upload-image', {
-          method: 'POST',
-          headers: {
-            ...getAuthHeader()
-          },
-          body: formDataForImage
-        });
-        
-        if (imageResponse.ok) {
-          const imageData = await imageResponse.json();
-          
-          // Update user with new profile picture URL
-          await fetch(`http://localhost:5000/api/v1/users/${currentUser.user_id}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              ...getAuthHeader()
-            },
-            body: JSON.stringify({
-              profile_picture: imageData.image_url
-            })
-          });
-        }
-      }
-      
+    
+  
       if (response.ok) {
-        setSuccess('Profile updated successfully!');
-        alert('Profile updated successfully!'); // ✅ ALERT POPUP
+        toast('Profile updated successfully!');
+        navigate('/home')
       } else {
         const data = await response.json();
         throw new Error(data.message || 'Failed to update profile');
       }
     } catch (err) {
-      setError(err.message || 'An error occurred while updating your profile');
-      alert(err.message || 'An error occurred while updating your profile'); // ✅ ALERT POPUP
+      toast(err.message || 'An error occurred while updating your profile');
     }
   };
 
@@ -178,12 +175,11 @@ const Profile = () => {
       
       <div className="profile-header">
         <h2>Profile</h2>
-        <img
-          src={previewPic || 'https://via.placeholder.com/120'}
-          alt="Profile"
-          className="profile-pic"
-        />
-        <input type="file" accept="image/*" onChange={handleImageChange} />
+      <input type="file" 
+      onChange={handleImageUpload}
+      
+       />
+      {imageUrl && <img src={imageUrl} alt="Uploaded" width="300" />}
       </div>
       
       <form onSubmit={handleSave}>
@@ -194,16 +190,6 @@ const Profile = () => {
             name="username"
             value={formData.username}
             disabled // Username can't be changed
-          />
-        </div>
-        
-        <div className="profile-field">
-          <label>Full Name</label>
-          <input
-            type="text"
-            name="full_name"
-            value={formData.full_name}
-            onChange={handleChange}
           />
         </div>
         
@@ -225,25 +211,6 @@ const Profile = () => {
             value={formData.location}
             onChange={handleChange}
           />
-        </div>
-        
-        <div className="profile-field">
-          <label>Expertise</label>
-          <input
-            type="text"
-            name="expertise"
-            value={formData.expertise}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className="section">
-          <h3>Recent Activity</h3>
-          {recentActivity.map((item, index) => (
-            <div key={index} className="activity-item">
-              {item}
-            </div>
-          ))}
         </div>
 
         <div className="section">

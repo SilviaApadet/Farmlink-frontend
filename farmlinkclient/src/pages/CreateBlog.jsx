@@ -1,28 +1,47 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { addBlog } from '../redux/slices/blogSlice';
-import NavBar from '../components/common/NavBar';
 import RichTextEditor from '../components/RichTextEditor.jsx';
+import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext.jsx';
+import toast from 'react-hot-toast';
 
 const CreateBlog = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const location = useLocation();
+  const state = location.state || {}
+  const editMode = !!state?.editMode;
+  const blog = state?.blog;
+  const [title, setTitle] = useState(editMode ? blog.title : '');
+  const [content, setContent] = useState(editMode ?  blog.content : '');
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [imageUrl, setImageUrl] = useState( editMode ? blog.imageUrl : '');
+  const { currentUser } = useAuth();
+
+  const API_URL = "https://farmlink-server-bhlp.onrender.com";
+
 
   // Handle image upload from computer
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+
+    const formData = new FormData();
+
+    formData.append('file', file);
+    formData.append('upload_preset', 'uploads')
+    formData.append('cloud_name', 'dhvgpxttr');
+
+    try {
+      const response = await axios.post(
+        'https://api.cloudinary.com/v1_1/dhvgpxttr/image/upload',
+        formData
+      );
+      setImageUrl(response.data.secure_url);
+    } catch (error) {
+      console.error('Upload failed:', error);
     }
   };
 
@@ -44,40 +63,98 @@ const CreateBlog = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Get current user info (in a real app, you would get this from auth state)
-    const currentUser = {
-      id: "user-1",
-      name: "Current User", // You'd get this from auth state
-    };
-    
-    // Create a new blog post object
+    editMode ? await editBlog() : await createBlog();
+  };
+
+  const editBlog = async () => {
     const newBlog = {
-      id: Date.now().toString(),
       title,
       content,
-      image: imagePreview,
-      author: currentUser.name,
-      authorId: currentUser.id,
+      image: imageUrl,
+      author: currentUser.username,
+      user_id: currentUser.user_id,
+      date: new Date().toISOString(),
+      likes: 0,
+      comments: 0,
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/blogs/${blog.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newBlog)
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to update blog');
+      }
+
+
+      if (response.ok) {
+        toast('Blog updated successfully!');
+        navigate('/home')
+      } else {
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to update blog');
+      }
+
+      // Redirect to blogs page after creation
+      navigate('/blogs');
+    } catch (err) {
+      toast(err.message || 'An error occurred while updating your blog');
+    }
+  }
+
+  const createBlog = async () => {
+    const newBlog = {
+      title,
+      content,
+      image: imageUrl,
+      author: currentUser.username,
+      user_id: currentUser.user_id,
       date: new Date().toISOString(),
       likes: 0,
       comments: 0,
     };
-    
-    // Dispatch action to add blog to Redux store
-    dispatch(addBlog(newBlog));
-    
-    console.log('New blog created:', newBlog);
-    
-    // Redirect to blogs page after creation
-    navigate('/blogs');
-  };
+
+    try {
+      const response = await fetch(`${API_URL}/blogs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newBlog)
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to create blog');
+      }
+
+
+      if (response.ok) {
+        toast('Blog created successfully!');
+        navigate('/home')
+      } else {
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to update blog');
+      }
+
+      // Redirect to blogs page after creation
+      navigate('/blogs');
+    } catch (err) {
+      toast(err.message || 'An error occurred while creating your blog');
+    }
+
+  }
 
   return (
     <div className="min-h-screen bg-green-50">
-      <NavBar />
       <div className="container mx-auto py-8 px-4 max-w-4xl">
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           {/* Header section similar to Canva design */}
@@ -86,10 +163,10 @@ const CreateBlog = () => {
               <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white mr-3">
                 <span className="text-xl">+</span>
               </div>
-              <h1 className="text-2xl font-bold text-green-800">Create New Blog Post</h1>
+              <h1 className="text-2xl font-bold text-green-800">{editMode ? "Edit blog post" : "Create New Blog Post"}</h1>
             </div>
           </div>
-          
+
           <form onSubmit={handleSubmit} className="p-6" onPaste={handlePaste}>
             {/* Title input */}
             <div className="mb-6">
@@ -103,7 +180,7 @@ const CreateBlog = () => {
                 required
               />
             </div>
-            
+
             {/* Image upload */}
             <div className="mb-6 flex items-center space-x-4">
               <button
@@ -115,7 +192,7 @@ const CreateBlog = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
               </button>
-              
+
               <button
                 type="button"
                 className="p-2 border border-gray-300 rounded hover:bg-gray-100"
@@ -125,7 +202,7 @@ const CreateBlog = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </button>
-              
+
               <button
                 type="button"
                 className="p-2 border border-gray-300 rounded hover:bg-gray-100"
@@ -135,7 +212,7 @@ const CreateBlog = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                 </svg>
               </button>
-              
+
               <div className="relative ml-auto">
                 <input
                   type="file"
@@ -154,16 +231,16 @@ const CreateBlog = () => {
                 </label>
               </div>
             </div>
-            
+
             {/* Image preview */}
-            {imagePreview && (
+            {imageUrl && (
               <div className="mb-6 relative">
-                <img src={imagePreview} alt="Preview" className="max-h-64 rounded-md border border-gray-300" />
+                <img src={imageUrl} alt="Preview" className="max-h-64 rounded-md border border-gray-300" />
                 <button
                   type="button"
                   onClick={() => {
                     setImage(null);
-                    setImagePreview(null);
+                    setImageUrl(null);
                   }}
                   className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                   title="Remove Image"
@@ -174,21 +251,22 @@ const CreateBlog = () => {
                 </button>
               </div>
             )}
-            
+
             {/* Content editor */}
             <div className="mb-6">
-              <RichTextEditor 
+              <RichTextEditor
                 value={content}
                 onChange={setContent}
               />
             </div>
-            
-            {/* Action buttons */}
-            <div className="flex justify-end space-x-4 mt-8">
+
+            {/* Action buttons - Centered */}
+            <div className="flex justify-center space-x-4 mt-8">
               <button
                 type="button"
                 onClick={() => navigate('/blogs')}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-red-500 text-white hover:bg-red-600"
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 transition-colors shadow-sm"
+                title="Cancel"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -196,9 +274,13 @@ const CreateBlog = () => {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                onClick={(e) => handleSubmit(e)}
+                className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium transition-colors shadow-sm flex items-center"
               >
                 POST
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
               </button>
             </div>
           </form>
