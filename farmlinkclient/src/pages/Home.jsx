@@ -6,6 +6,8 @@ import './Home.css';
 const Home = () => {
   const { currentUser } = useAuth();
   const isExpert = currentUser?.role === 'expert';
+  console.log('Current user:', currentUser);
+  console.log('User role:', currentUser?.role);
 
   return (
     <div className="dashboard-container">
