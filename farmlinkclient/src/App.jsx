@@ -15,6 +15,7 @@ import Home from './pages/Home';  // Assuming you have a Home page
 import BlogDetail from './pages/BlogDetail';  // Assuming BlogDetail exists
 import Login from './pages/Login';  // Assuming Login exists
 import SignUp from './pages/Signup';  // Assuming SignUp exists
+import { Toaster } from 'react-hot-toast';
 
 // Private route component
 const PrivateRoute = ({ element }) => {
@@ -25,6 +26,7 @@ const PrivateRoute = ({ element }) => {
 function App() {
   return (
     <Provider store={store}>
+      <Toaster />
       <AuthProvider>
         <Router>
           <Routes>

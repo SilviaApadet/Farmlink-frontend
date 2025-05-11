@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import CommunityCard from './CommunityCard';
-import communityData from '../../data/communities.json';
 
 const CommunityList = () => {
   const [communities, setCommunities] = useState([]);
+  const API_URL = "https://farmlink-server-bhlp.onrender.com";
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
 
   // On fetching communities from backend
   useEffect(() => {
@@ -31,9 +32,7 @@ const CommunityList = () => {
       }
     };
 
-    fetchCommunities();
-  }, []);
-
+ 
   if (loading) {
     return <p>Loading communities...</p>;
   }

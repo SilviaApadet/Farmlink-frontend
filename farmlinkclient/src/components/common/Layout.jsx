@@ -1,21 +1,18 @@
 // src/components/common/Layout.jsx
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation(); // Add this to get the current location
   const isWelcomePage = location.pathname === '/' || location.pathname === '/welcome';
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
-  }, []);
+  const { isAuthenticated, logout } = useAuth();
+
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsLoggedIn(false);
+    logout();
     navigate('/login');
   };
 
@@ -33,7 +30,7 @@ const Layout = () => {
               <Link style={styles.link} to="/profile">Profile</Link>
             </div>
             <div>
-              {!isLoggedIn ? (
+              {!isAuthenticated ? (
                 <>
                   <Link style={styles.link} to="/login">Login</Link>
                   <Link style={styles.link} to="/signup">Sign Up</Link>

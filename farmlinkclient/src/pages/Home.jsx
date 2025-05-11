@@ -13,7 +13,7 @@ const Home = () => {
     <div className="dashboard-container">
       {/* Header Section */}
       <header className="dashboard-header">
-        <h2>Welcome back, {currentUser?.name || 'Farmer'}! 👋</h2>
+        <h2>Welcome back, {currentUser?.username || 'Farmer'}! 👋</h2>
         <p>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
       </header>
 
