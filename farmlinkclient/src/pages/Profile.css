@@ -1,5 +1,3 @@
-
-/* Profile.css - Updated with file upload styling */
 .profile-container {
   max-width: 600px;
   margin: 40px auto;
@@ -76,7 +74,7 @@
   background-color: #3d9140;
 }
 
-/* Styling for the uploaded image */
+
 .profile-header img {
   width: 150px;
   height: 150px;
@@ -87,7 +85,7 @@
   margin-top: 15px;
 }
 
-/* Form styling */
+
 .profile-field {
   margin-bottom: 22px;
 }
@@ -142,7 +140,7 @@
   font-weight: 600;
 }
 
-/* Button styling */
+
 .button-group {
   display: flex;
   justify-content: space-between;
@@ -186,7 +184,7 @@
   background-color: #c82333;
 }
 
-/* Status messages */
+
 .error-message {
   background-color: #fde8e8;
   color: #e53e3e;
@@ -213,7 +211,7 @@
   color: #2e7d32;
 }
 
-/* Responsive adjustments */
+
 @media (max-width: 640px) {
   .profile-container {
     margin: 20px 15px;
