@@ -232,8 +232,8 @@ const ExpertDashboard = () => {
             ))}
           </ul>
           <div className="article-buttons">
-            <Link to="/expert/articles/new" className="new-article-button">Write New Article</Link>
-            <Link to="/expert/articles" className="see-more-link">View All Articles</Link>
+            <Link to="/blogs/create" className="new-article-button">Write New Blog</Link>
+            <Link to="/blogs" className="see-more-link">View Blogs</Link>
           </div>
         </div>
       </div>
