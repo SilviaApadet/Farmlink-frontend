@@ -9,19 +9,16 @@ const BlogCard = ({ blog, onBlogLike, deleteBlog, editBlog }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const likedBlogs = useSelector(state => state.blogs.likedBlogs);
-  const isLiked = likedBlogs.includes(blog.id);
   const { currentUser } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
-  const [localLiked, setLocalLiked] = useState(isLiked);
-  const [localLikeCount, setLocalLikeCount] = useState(blog.likes || 0);
+  
+  // State for managing likes
+  const [isLiked, setIsLiked] = useState(likedBlogs.includes(blog.id));
+  const [likeCount, setLikeCount] = useState(blog.likes || 0);
+  
   const dropdownRef = useRef(null);
 
   const API_URL = "https://farmlink-server-bhlp.onrender.com";
-
-  // Update local state when Redux state changes
-  useEffect(() => {
-    setLocalLiked(isLiked);
-  }, [isLiked]);
 
   // Format date to be more readable
   const formatDate = (dateString) => {
@@ -38,38 +35,49 @@ const BlogCard = ({ blog, onBlogLike, deleteBlog, editBlog }) => {
 
   // Handle like button click
   const handleLike = async (e) => {
-    e.stopPropagation(); // Stop event propagation to prevent navigation
+    e.stopPropagation(); // Prevent navigation
     
-    // Optimistically update local UI state
-    setLocalLiked(!localLiked);
-    setLocalLikeCount(prevCount => localLiked ? prevCount - 1 : prevCount + 1);
-    
-    // Then perform the actual API call
-    await likeBlog(blog.id);
-    
-    // Dispatch Redux action (if your Redux is set up to handle this)
-    if (!localLiked) {
-      dispatch({ type: 'ADD_LIKED_BLOG', payload: blog.id });
-    } else {
-      dispatch({ type: 'REMOVE_LIKED_BLOG', payload: blog.id });
+    try {
+      // Optimistically update UI
+      const newLikedState = !isLiked;
+      setIsLiked(newLikedState);
+      setLikeCount(prev => newLikedState ? prev + 1 : prev - 1);
+
+      // Make API call
+      const response = await axios.post(
+        `${API_URL}/blogs/${blog.id}/like`, 
+        { "user_id": currentUser.user_id }, 
+        {
+          headers: {
+            "Content-Type": 'application/json'
+          }
+        }
+      );
+
+      // Update Redux state
+      if (newLikedState) {
+        dispatch({ type: 'ADD_LIKED_BLOG', payload: blog.id });
+      } else {
+        dispatch({ type: 'REMOVE_LIKED_BLOG', payload: blog.id });
+      }
+
+      // Call parent component's like handler if provided
+      if (onBlogLike) {
+        onBlogLike();
+      }
+
+      // Show success toast
+      toast.success(response.data.message);
+    } catch (error) {
+      // Revert optimistic update on error
+      setIsLiked(!isLiked);
+      setLikeCount(prev => isLiked ? prev + 1 : prev - 1);
+      
+      // Show error toast
+      toast.error(error.response?.data?.message || 'Failed to like blog');
+      console.error("Like error", error);
     }
   };
-
-  const likeBlog = async (blogId) => {
-    try {
-      const response = await axios.post(`${API_URL}/blogs/${blogId}/like`, { "user_id": currentUser.user_id }, {
-        headers: {
-          "Content-Type": 'application/json'
-        }
-      });
-      const res = response.data;
-      onBlogLike()
-      toast(res.message)
-    } catch (error) {
-      console.log("Error", error)
-      toast(error.message)
-    }
-  }
 
   // Handle card click to navigate to blog detail
   const handleCardClick = () => {
@@ -127,12 +135,12 @@ const BlogCard = ({ blog, onBlogLike, deleteBlog, editBlog }) => {
           <div className="flex items-center space-x-6">
             <button
               onClick={handleLike}
-              className={`flex items-center space-x-2 transition-colors duration-200 ${localLiked ? 'text-red-500' : 'text-gray-600 hover:text-green-600'}`}
+              className={`flex items-center space-x-2 transition-colors duration-200 ${isLiked ? 'text-red-500' : 'text-gray-600 hover:text-green-600'}`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill={localLiked ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill={isLiked ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
-              <span>{localLikeCount}</span>
+              <span>{likeCount}</span>
             </button>
             <div className="flex items-center space-x-2">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

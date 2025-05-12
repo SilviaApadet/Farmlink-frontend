@@ -9,7 +9,6 @@ const BlogList = () => {
   const API_URL = "https://farmlink-server-bhlp.onrender.com";
   const [blogs, setBlogs] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
 
   useEffect(() => {
     fetchBlogs();
@@ -20,7 +19,15 @@ const BlogList = () => {
     try {
       const response = await axios.get(`${API_URL}/blogs`);
       const data = response.data;
-      setBlogs(data);
+      
+      // Sort blogs by creation date in descending order (most recent first)
+      const sortedBlogs = data.sort((a, b) => {
+        const dateA = new Date(a.created_at || 0);
+        const dateB = new Date(b.created_at || 0);
+        return dateB.getTime() - dateA.getTime();
+      });
+      
+      setBlogs(sortedBlogs);
     } catch (error) {
       toast.error('Cannot fetch blogs');
       console.error("Error fetching blogs:", error);
@@ -40,20 +47,12 @@ const BlogList = () => {
   };
 
   // Filter blogs based on search term
-  const filteredBlogs = blogs?.filter(blog => {
-    const matchesSearch = blog.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         blog.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         blog.author.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    if (activeFilter === 'all') return matchesSearch;
-    if (activeFilter === 'popular') return matchesSearch && blog.likes > 10;
-    if (activeFilter === 'recent') {
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      return matchesSearch && new Date(blog.created_at) > oneWeekAgo;
-    }
-    return matchesSearch;
-  });
+  const filteredBlogs = blogs?.filter(blog => 
+    !searchTerm || 
+    blog.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (blog.content && blog.content.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    blog.author.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -89,43 +88,20 @@ const BlogList = () => {
       </div>
 
       <div className="container mx-auto px-4">
-        {/* Search and filter section */}
+        {/* Search section */}
         <div className="bg-white rounded-lg shadow-md p-4 mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="relative flex-grow max-w-lg">
-              <input
-                type="text"
-                placeholder="Search blogs..."
-                className="w-full border border-gray-300 rounded-md py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-            </div>
-            
-            <div className="flex space-x-2">
-              <button 
-                onClick={() => setActiveFilter('all')} 
-                className={`px-4 py-2 rounded-md ${activeFilter === 'all' ? 'bg-green-600 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-              >
-                All
-              </button>
-              <button 
-                onClick={() => setActiveFilter('popular')} 
-                className={`px-4 py-2 rounded-md ${activeFilter === 'popular' ? 'bg-green-600 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-              >
-                Popular
-              </button>
-              <button 
-                onClick={() => setActiveFilter('recent')} 
-                className={`px-4 py-2 rounded-md ${activeFilter === 'recent' ? 'bg-green-600 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-              >
-                Recent
-              </button>
+          <div className="relative flex-grow max-w-lg mx-auto">
+            <input
+              type="text"
+              placeholder="Search blogs..."
+              className="w-full border border-gray-300 rounded-md py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
           </div>
         </div>
@@ -133,14 +109,15 @@ const BlogList = () => {
         {/* Blog listing section */}
         <div className="max-w-4xl mx-auto">
           {filteredBlogs && filteredBlogs.length > 0 ? (
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="space-y-6">
               {filteredBlogs.map(blog => (
-                <BlogCard 
-                  key={blog.id} 
-                  blog={blog} 
-                  onBlogLike={fetchBlogs} 
-                  deleteBlog={() => deleteBlog(blog.id)} 
-                />
+                <div key={blog.id} className="bg-white rounded-lg shadow-md">
+                  <BlogCard 
+                    blog={blog} 
+                    onBlogLike={fetchBlogs} 
+                    deleteBlog={() => deleteBlog(blog.id)} 
+                  />
+                </div>
               ))}
             </div>
           ) : (
@@ -160,22 +137,6 @@ const BlogList = () => {
             </div>
           )}
         </div>
-
-        {/* Pagination - only show if there are blogs */}
-        {filteredBlogs && filteredBlogs.length > 5 && (
-          <div className="flex justify-center mt-8">
-            <nav className="bg-white px-4 py-3 flex items-center justify-between border border-gray-200 rounded-md shadow-sm">
-              <div className="flex-1 flex justify-between">
-                <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                  Previous
-                </button>
-                <button className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                  Next
-                </button>
-              </div>
-            </nav>
-          </div>
-        )}
       </div>
     </div>
   );
