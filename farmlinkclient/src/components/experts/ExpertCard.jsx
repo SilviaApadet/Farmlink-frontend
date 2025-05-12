@@ -6,8 +6,8 @@ const ExpertCard = ({ expert, loggedInUserId }) => {
     <div className="flex items-center bg-white rounded-lg overflow-hidden shadow-md p-4 mb-4">
       <div className="w-16 h-16 rounded-full overflow-hidden mr-4">
         <img 
-          src={expert.profile_picture} 
-          alt={expert.profile_picture} 
+          src={expert.image} 
+          alt={expert.image} 
           className="w-full h-full object-cover"
         />
       </div>
@@ -16,8 +16,8 @@ const ExpertCard = ({ expert, loggedInUserId }) => {
         <p className="text-sm text-gray-600">{expert.bio}</p>
         <p className="text-xs text-gray-500 mt-1">
           <span className="mr-3">{expert.specialty}</span>
-          <span className="mr-3">{expert.followers} Followers</span>
-          <span>{expert.posts} Posts</span>
+          {/* <span className="mr-3">{expert.followers} Followers</span>
+          <span>{expert.posts} Posts</span> */}
         </p>
       </div>
       <FollowButton 
