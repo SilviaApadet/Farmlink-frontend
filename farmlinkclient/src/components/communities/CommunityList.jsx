@@ -8,9 +8,9 @@ const CommunityList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-
   // On fetching communities from backend
   useEffect(() => {
+
     fetchCommunities()
   }, []);
 
@@ -47,7 +47,10 @@ const CommunityList = () => {
     //   }
     // };
 
- 
+
+    fetchCommunities(); // Call the function
+  }, []); // Empty dependency array to run once on mount
+
   if (loading) {
     return <p>Loading communities...</p>;
   }
