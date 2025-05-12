@@ -24,7 +24,7 @@ const CommunityCard = ({ community, loggedInUserId }) => {
         </div>
         <div>
           <h3 className="font-semibold text-gray-800 uppercase">{community.name}</h3>
-          <p className="text-xs text-gray-600">WELCOME TO THE COMMUNITY</p>
+          <p className="text-xs text-gray-600">{community.description}</p>
         </div>
       </div>
 
