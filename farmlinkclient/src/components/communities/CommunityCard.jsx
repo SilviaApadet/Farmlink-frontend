@@ -14,12 +14,12 @@ const CommunityCard = ({ community, loggedInUserId }) => {
       className="flex items-center p-4 bg-white rounded-lg shadow-sm mb-4 cursor-pointer hover:shadow-md transition-shadow duration-300"
       onClick={handleNavigate}
     >
-      <div className="flex basis-3/4">
-        <div className="h-12 w-12 rounded-full overflow-hidden mr-4">
+      <div className="flex">
+      <div className="w-64 h-32 rounded-lg overflow-hidden mr-4 border border-gray-200 shadow-sm">
           <img 
             src={community.image} 
             alt={community.name} 
-            className="h-full w-full object-cover"
+            className="object-cover w-full h-full"
           />
         </div>
         <div>
