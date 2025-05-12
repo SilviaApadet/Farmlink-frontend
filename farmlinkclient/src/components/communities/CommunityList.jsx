@@ -48,8 +48,7 @@ const CommunityList = () => {
     // };
 
 
-    fetchCommunities(); // Call the function
-  }, []); // Empty dependency array to run once on mount
+   // Empty dependency array to run once on mount
 
   if (loading) {
     return <p>Loading communities...</p>;
