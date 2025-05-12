@@ -24,22 +24,29 @@ const FollowButton = ({ currentUserId, recipientId }) => {
 
   return (
     <div className="relative">
-      <button
-        onClick={handleFollowClick}
-        className={`px-4 py-2 rounded text-white font-semibold transition duration-300 ${
-          isFollowed ? 'bg-gray-600' : 'bg-green-600 hover:bg-green-700'
-        }`}
-      >
-        {isFollowed ? 'Unfollow' : 'Follow'}
-      </button>
-
-      {isFollowed && (
+      {!isFollowed ? (
         <button
-          onClick={handleMessageClick}
-          className="ml-2 px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition duration-300"
+          onClick={handleFollowClick}
+          className="px-4 py-2 rounded text-white font-semibold transition duration-300 bg-green-600 hover:bg-green-700"
         >
-          Message
+          Follow
         </button>
+      ) : (
+        <div className="flex gap-2">
+          <button
+            onClick={handleFollowClick}
+            className="px-4 py-2 rounded text-white font-semibold transition duration-300 bg-gray-600"
+          >
+            Unfollow
+          </button>
+
+          <button
+            onClick={handleMessageClick}
+            className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition duration-300"
+          >
+            Message
+          </button>
+        </div>
       )}
 
       {showChatbox && (
