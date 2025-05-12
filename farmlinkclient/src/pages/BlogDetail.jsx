@@ -19,6 +19,7 @@ const BlogDetail = () => {
   // Add local states for optimistic UI updates
   const [localLiked, setLocalLiked] = useState(false);
   const [localLikeCount, setLocalLikeCount] = useState(0);
+  const [comments, setComments] = useState([]);
 
   const API_URL = "https://farmlink-server-bhlp.onrender.com";
   
@@ -30,24 +31,38 @@ const BlogDetail = () => {
   // Fetch blog data if not provided via state
   useEffect(() => {
     const fetchBlog = async () => {
-      if (!blog) {
-        try {
-          setLoading(true);
-          const response = await axios.get(`${API_URL}/blogs/${id}`);
-          setBlog(response.data);
-        } catch (error) {
-          console.error("Error fetching blog:", error);
-          toast.error("Failed to load blog");
-        } finally {
-          setLoading(false);
+      try {
+        setLoading(true);
+        let blogData;
+        
+        // Try to get blog from state or Redux first
+        if (state?.blog) {
+          blogData = state.blog;
+        } else if (blogs && blogs.length > 0) {
+          blogData = blogs.find(b => b.id === parseInt(id));
         }
-      } else {
+        
+        // If not found, fetch from API
+        if (!blogData) {
+          const response = await axios.get(`${API_URL}/blogs/${id}`);
+          blogData = response.data;
+        }
+        
+        // Fetch comments separately to ensure freshness
+        const commentsResponse = await axios.get(`${API_URL}/blogs/${id}/comments`);
+        
+        setBlog(blogData);
+        setComments(commentsResponse.data || []);
+      } catch (error) {
+        console.error("Error fetching blog or comments:", error);
+        toast.error("Failed to load blog or comments");
+      } finally {
         setLoading(false);
       }
     };
     
     fetchBlog();
-  }, [id, blog, API_URL]);
+  }, [id, state?.blog, blogs, API_URL]);
 
   // Update local state when blog data or Redux state changes
   useEffect(() => {
@@ -111,18 +126,18 @@ const BlogDetail = () => {
 
   // Handle comment added
   const handleCommentAdded = (newComment) => {
+    setComments(prev => [...prev, newComment]);
     setBlog(prev => ({
       ...prev,
-      commentList: [...(prev.commentList || []), newComment],
       comments: ((prev.comments || 0) + 1)
     }));
   };
 
   // Handle comment deleted
   const handleCommentDeleted = (commentId) => {
+    setComments(prev => prev.filter(c => c.id !== commentId));
     setBlog(prev => ({
       ...prev,
-      commentList: (prev.commentList || []).filter(c => c.id !== commentId),
       comments: Math.max((prev.comments || 0) - 1, 0)
     }));
   };
@@ -184,7 +199,7 @@ const BlogDetail = () => {
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
-                  <span>{blog.comments || 0}</span>
+                  <span>{comments.length}</span>
                 </div>
               </div>
             </div>
@@ -218,7 +233,7 @@ const BlogDetail = () => {
             {/* Comments section */}
             <CommentSection 
               blogId={id}
-              comments={blog.commentList || []}
+              comments={comments}
               currentUser={currentUser}
               onCommentAdded={handleCommentAdded}
               onCommentDeleted={handleCommentDeleted}
