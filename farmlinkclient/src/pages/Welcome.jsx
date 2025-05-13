@@ -16,7 +16,6 @@ const Welcome = () => {
           </div>
         </div>
         <div className="hero-image">
-          <img src="https://images.unsplash.com/photo-1605733160314-4d70b4d1c9a4" alt="Farming" />
         </div>
       </section>
 
